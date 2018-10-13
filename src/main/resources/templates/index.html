@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>manage money</title>
+    <link rel="stylesheet" href="plugin/bootstrap-4.1.3-dist/css/bootstrap.css">
+    <link rel="stylesheet" href="plugin/bootstrap-4.1.3-dist/css/bootstrap-grid.css">
+    <link rel="stylesheet" href="plugin/bootstrap-table/bootstrap-table.css">
+</head>
+<body>
+<div style="width: 800px;height: 200px;margin: 100px auto;">
+
+
+    <h1>Welcome</h1>
+    <p>you can manage your money here.</p>
+    <form id="add" action="/newRecord" method="post">
+        <p  id="moneytip" style="font-size: 35px;">how money:</p>
+        <select name="type" autofocus="autofocus" style="width: 50px;height: 50px;font-size: 35px;border:none;border-bottom: #0b2e13 solid 1px;">
+            <option value="add">+</option>
+            <option value="sub">-</option>
+        </select>
+        <input id="moneyinput" type="text" name="money" placeholder="how money" style="width: 350px;height: 50px;font-size: 35px;border:none;border-bottom: #0b2e13 solid 1px;">
+    </form>
+    <div style="width: 100%;height: 100px;" id="result">
+        <h2></h2>
+    </div>
+
+</div>
+<div style="" class="col-8">
+<table id="moneyrecord" class="table table-hover" >
+
+</table>
+</div>
+</body>
+<script src="/plugin/jquery-3.3.1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+        integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+<script src="/plugin/bootstrap-4.1.3-dist/js/bootstrap.js"></script>
+<script src="/plugin/bootstrap-table/bootstrap-table.js"></script>
+<script src="/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+<script>
+    $("#add").submit(function (e) {
+
+
+        var form = $(this);
+        var url = form.attr('action');
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form.serialize(), // serializes the form's elements.
+            success: function (data) {
+                showResult(data);
+                $('#moneyrecord').bootstrapTable('refresh');
+            }
+        });
+
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+    });
+
+    $(function(){
+
+        $("#moneytip").fadeOut();
+        $("#moneyrecord").bootstrapTable("destroy");
+        initTable();
+
+        $("#add").focus(function () {
+            $("#moneytip").fadeIn();
+        }).blur(function () {
+            $("#moneytip").fadeOut();
+        })
+    })
+    function initTable(){
+    $("#moneyrecord").bootstrapTable({
+        method:"get",
+        url:"allMoneyRecord",
+        striped: true,  //表格显示条纹
+        sortable: true, //是否启用排序
+        sortName : 'id',//初始化的时候排序的字段
+        sortOrder: "desc", //排序方式
+        pagination: true, //启动分页
+        pageSize: 10,  //每页显示的记录数
+        pageNumber:1, //当前第几页
+        pageList: [5, 10, 15, 20, 25,100],  //记录数可选列表
+        sidePagination: "server", //表示服务端请求
+        queryParamsType : "limit",
+        showRefresh:true,
+        showToggle:true,
+        idField:"id",
+        paginationVAlign:"top",
+        paginationPreText:"PR",
+        paginationNextText:"NE",
+
+        queryParams : function(params) {
+            var param =  {
+                pageSize : params.limit,
+                rowoffset : params.offset,
+                sortOrder: params.order,//排序方式
+                sortName:params.sort//排序字段
+            };
+            return param;
+        },
+        columns:[
+            {field:"id",
+                title:"序号",
+                sortable:true
+            },
+            {
+                field:"typeStr",
+                title:"类型",
+                sortable:true
+            },
+            {
+                field:"money",
+                title:"金额",
+                sortable:true
+            },
+            {
+                field:"remain",
+                title:"余额",
+                sortable:true
+            },
+            {
+                field:"recordDateStr",
+                title:"时间",
+                sortable:true
+            }
+        ],
+        // ---------------------
+        //     作者：麒麟木木
+        // 来源：CSDN
+        // 原文：https://blog.csdn.net/lzx_longyou/article/details/50563907?utm_source=copy
+        //     版权声明：本文为博主原创文章，转载请附上博文链接！
+        onLoadSuccess:function(){
+            showResult("加载成功")
+        },
+        onLoadError:function(){
+            showResult("加载失败")
+        }
+    });
+    }
+
+    function showResult(data){
+        //alert(data); // show response from the php script.
+        $("#result>h2").text(data);
+        setTimeout(function () {
+            $("#result").text("");
+        }, 1500);
+    }
+</script>
+</html>
